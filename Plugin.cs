@@ -36,7 +36,7 @@ namespace MoneyAirways
                 if (esc_button != null)
                 {
                     manager = esc_button.gameObject.AddComponent<Manager>();
-                    manager.cash = 1000;
+                    manager.cash = 0;
                 }
             }
         }
