@@ -18,7 +18,7 @@ Press `Left SHIFT` + numbers `1` ~ `9` to purchase upgrade directly,
 
 ***
 
-# 迷你空管ILS
+# 迷你空管CEO
 
 一个能让你购买升级的迷你空管Mod。按`B`购买升级（-$10），按`R`刷新升级列表（-$5）。每次起飞降落可以获得2倍分数的钱。左上角可以看到当前现金。
 
