@@ -168,7 +168,7 @@ namespace AirwaysCEO
         {
             GameObject esc_button = GameObject.Find("ESC_Button");
             purchaseButton = Instantiate(parent.gameObject, esc_button.transform.parent).GetComponent<Button>();
-            purchaseButton.transform.localPosition = new Vector3(-1100f, 620f, -9f);
+            purchaseButton.transform.localPosition = new Vector3(-1200f, 500f, -9f);
             purchaseButton.onClick.RemoveAllListeners();
             purchaseButton.onClick = new Button.ButtonClickedEvent();
             purchaseButton.onClick.AddListener(BuyUpgrades);
@@ -176,7 +176,7 @@ namespace AirwaysCEO
             TMP_Text costText = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
             costText.fontSize = 30f;
             costText.rectTransform.sizeDelta = new Vector2(190f, 70f);
-            costText.transform.localPosition = new Vector3(-1070f, 670f, -9f);
+            costText.transform.localPosition = new Vector3(-1170f, 550f, -9f);
             costText.text = "-$" + buyCost;
         }
 
