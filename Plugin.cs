@@ -67,6 +67,37 @@ namespace MoneyAirways
             SetupCost(ref ___ELVtext);
         }
 
+        public void UpdateButtonsSprite(ref List<Sprite> sprites_)
+        {
+            if (buttons[1] == null)
+            {
+                sprites = sprites_;
+            }
+            else
+            {
+                UpdateButtonSprite(UpgradeOpt.LONGER_TAXIWAY, ref sprites_);
+                UpdateButtonSprite(UpgradeOpt.MORE_TAXIWAY_EXIT, ref sprites_);
+                UpdateButtonSprite(UpgradeOpt.TURN_FASTER, ref sprites_);
+                UpdateButtonSprite(UpgradeOpt.AIRSPACE, ref sprites_);
+                UpdateButtonSprite(UpgradeOpt.COMPENSATION, ref sprites_);
+            }
+        }
+
+        private void UpdateButtonSprite(UpgradeOpt upgradeOpt, ref List<Sprite> sprites)
+        {
+            switch (upgradeOpt)
+            {
+                case UpgradeOpt.LONGER_TAXIWAY:
+                case UpgradeOpt.MORE_TAXIWAY_EXIT:
+                case UpgradeOpt.TURN_FASTER:
+                case UpgradeOpt.AIRSPACE:
+                case UpgradeOpt.COMPENSATION:
+                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<Image>().sprite = sprites[(int)upgradeOpt];
+                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<RectTransform>().sizeDelta = new Vector2(30, 45);
+                    break;
+            }
+        }
+
         private void Update()
         {
             if (cashDisplay == null)
@@ -100,30 +131,13 @@ namespace MoneyAirways
             buttons[(int)upgradeOpt].onClick.AddListener(()=>ApplyUpgrade(upgradeOpt));
 
             TMP_Text cost = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
-            cost.transform.localPosition = new Vector3(780 + ((int)upgradeOpt - 1) * 60, -630, -9f);
+            cost.transform.localPosition = new Vector3(785 + ((int)upgradeOpt - 1) * 60, -630, -9f);
             cost.text = "$" + buyCosts[(int)upgradeOpt];
 
-            TMP_Text name = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
-            name.transform.localPosition = new Vector3(790 + ((int)upgradeOpt - 1) * 60, -600, -9f);
-            name.text = GetName(upgradeOpt);
-        }
-
-        private string GetName(UpgradeOpt upgradeOpt)
-        {
-            switch (upgradeOpt)
+            if (sprites != null)
             {
-                case UpgradeOpt.LONGER_TAXIWAY:
-                    return "Apron";
-                case UpgradeOpt.MORE_TAXIWAY_EXIT:
-                    return "Exit";
-                case UpgradeOpt.TURN_FASTER:
-                    return "Turn";
-                case UpgradeOpt.AIRSPACE:
-                    return "Space";
-                case UpgradeOpt.COMPENSATION:
-                    return "Comp";
+                UpdateButtonSprite(upgradeOpt, ref sprites);
             }
-            return "";
         }
 
         private void UpdateButtons()
@@ -144,11 +158,20 @@ namespace MoneyAirways
             bool available = cash >= buyCosts[(int)upgradeOpt];
             switch (upgradeOpt)
             {
+                case UpgradeOpt.MORE_TAXIWAY_EXIT:
+                    available &= !TakeoffTaskManager.Instance.Aprons[TakeoffTaskManager.Instance.Aprons.Count - 1].Interactable;
+                    break;
                 case UpgradeOpt.AIRSPACE:
                     available &= Camera.main.orthographicSize <= LevelManager.Instance.maximumCameraOrthographicSize - 0.5f;
                     break;
                 case UpgradeOpt.COMPENSATION:
                     available &= RestrictedAreaManager.Instance != null && RestrictedAreaManager.Instance.counter < 3;
+                    break;
+                case UpgradeOpt.LAND_WAYPOINT:
+                    available &= WaypointPropsManager.Instance.WaypointAutoLandingCount < Runway.GetAvailableLandPointCount();
+                    break;
+                case UpgradeOpt.TAKEOFF_WAYPOINT:
+                    available &= WaypointPropsManager.Instance.WaypointTakingOffCount < Runway.GetAvailableStartPointCount();
                     break;
             }
             return available;
@@ -156,7 +179,8 @@ namespace MoneyAirways
 
         private void UpdateButton(UpgradeOpt upgradeOpt)
         {
-            buttons[(int)upgradeOpt].GetComponent<Image>().color = UpgradeAvailable(upgradeOpt) ? new Color(255, 255, 255, 0.1f) : new Color(255, 255, 255, 0.75f);
+            buttons[(int)upgradeOpt].GetComponent<Image>().color = UpgradeAvailable(upgradeOpt) ? new Color(255, 255, 255, 0.1f) : new Color(0, 0, 0, 0.5f);
+            buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<Image>().color = UpgradeAvailable(upgradeOpt) ? new Color(255, 255, 255, 1f) : new Color(0, 0, 0, 0.5f);
         }
 
         private void SetupCost(ref TMP_Text parent)
@@ -305,8 +329,9 @@ namespace MoneyAirways
         public const int buyCost = 20;
         public List<int> buyCosts = new List<int> { 0, 30, 40, 30, 30, 40, 30, 40, 50, 50 };
         public int cash = 0;
+        public Transform upgradeButton;
+        private List<Sprite> sprites;
         private TMP_Text cashDisplay;
-        private GameObject cashDisplayObj;
         private List<Button> buttons = new List<Button> { null, null, null, null, null, null, null, null, null, null };
         private bool upgrading = false;
     }
@@ -350,10 +375,12 @@ namespace MoneyAirways
     [HarmonyPatch(typeof(UpgradeManager), "Start", new Type[] { })]
     class PatchUpgradeManagerStart
     {
-        static bool Prefix(ref float ___upgradeInterval)
+        static bool Prefix(ref float ___upgradeInterval, ref List<Sprite> ___sprites, ref List<Transform> ___upgradeButtonList)
         {
             // Double the speed for upgrade.
             ___upgradeInterval = float.MaxValue;
+            Plugin.manager.UpdateButtonsSprite(ref ___sprites);
+            Plugin.manager.upgradeButton = ___upgradeButtonList[0];
             return true;
         }
     }
