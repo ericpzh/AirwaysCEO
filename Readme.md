@@ -1,15 +1,21 @@
 # Airways CEO
 
-A Mini Airways mod allows you to purchase upgrades and refresh upgrade options actively. Press `B` to buy an upgrade (-$20) and press `R` to refresh upgrade list (-$5). Each hand-over/landing gets you two times the point worth of cash. Current cash is displayed on the lower-right.
+A Mini Airways mod allows you to purchase upgrades and refresh upgrade options actively. Each hand-over/landing gets you two times the point worth of cash. Current cash is displayed on the lower-right.
 
-<img src="ui.png" width=50% height=50%>
+<img src="ui1.png" width=50% height=50%>
 
-You can also use the button on the bottom right corner to purchase upgrade directly, or press `Left SHIFT` + numbers `1` ~ `9` to purchase upgrade directly. 
+Use the button on the bottom right corner to purchase upgrade directly, or press `Left SHIFT` + numbers `1` ~ `9` to purchase upgrade directly. 
 
 | `LShift`+`1`     | `LShift`+`2` | `LShift`+`3`   | `LShift`+`4` | `LShift`+`5`     | `LShift`+`6` | `LShift`+`7`  | `LShift`+`8`   | `LShift`+`9`   |
 |------------------|--------------|----------------|--------------|------------------|--------------|---------------|----------------|----------------|
 |   Waiting Area   |   Exit       |   Turn Speed   |   Airspace   |   Compensation   |   Waypoint   |   Holding WP  |   Landing WP   |   Takeoff WP   |
 |   $30            |   $40        |   $30          |   $30        |   $30            |   $30        |   $40         |   $50          |   $50          |
+
+Use the button on the top left corner or press `B` to buy an random upgrade (-$20) and use the button on the right of upgrade list or press `R` to refresh the upgrade list (-$5).
+
+<img src="ui2.png" width=50% height=50%>
+
+<img src="ui3.png" width=50% height=50%>
 
 # How to Install
 
@@ -20,16 +26,23 @@ You can also use the button on the bottom right corner to purchase upgrade direc
 
 # 空管CEO
 
-一个能让你购买升级的迷你空管Mod。按`B`购买升级（-$10），按`R`刷新升级列表（-$5）。每次起飞降落可以获得2倍分数的钱。右下角可以看到当前现金。
+一个能让你购买升级的迷你空管Mod。每次起飞降落可以获得2倍分数的钱。右下角可以查看当前余额。
 
-<img src="ui.png" width=50% height=50%>
+<img src="ui1.png" width=50% height=50%>
 
-可以用画面右下角的按键直接购买升级，也可以用 `Left SHIFT` + 数字键`1` ~ `9`直接购买升级。
+用画面右下角的按键直接购买升级，也可以用 `Left SHIFT` + 数字键`1` ~ `9`直接购买升级。
 
 | `LShift`+`1`     | `LShift`+`2` | `LShift`+`3`   | `LShift`+`4` | `LShift`+`5`     | `LShift`+`6` | `LShift`+`7`  | `LShift`+`8`   | `LShift`+`9`   |
 |----------|----------|----------|----------|----------|----------|----------|----------|----------|
 | 等待区   | 出口     | 转弯速度 | 空域     | 赔偿     | 航点     | 盘旋航点 | 降落航点 | 起飞航点 |
 | $30      | $40      | $30      | $30      | $30      | $30      | $40      | $50      | $50      |
+
+
+用画面左上角的按键或按`B`购买一项随机升级（-$20），按升级列表右边的按键或按`R`刷新升级列表（-$5）。
+
+<img src="ui2.png" width=50% height=50%>
+
+<img src="ui3.png" width=50% height=50%>
 
 # 如何安装
 

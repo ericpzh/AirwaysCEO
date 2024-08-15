@@ -54,6 +54,8 @@ namespace AirwaysCEO
     public class Manager : MonoBehaviour {
         public void SetupButtons(ref Button ___EntBtn, ref Button ___HdgBtn, ref Button ___HldBtn, ref Button ___LDBtn, ref Button ___TOBtn, ref TMP_Text ___ELVtext)
         {
+            SetupPurchaseButton(ref ___EntBtn, ref ___ELVtext);
+
             SetupButton(ref ___EntBtn, UpgradeOpt.LONGER_TAXIWAY, ref ___ELVtext);
             SetupButton(ref ___EntBtn, UpgradeOpt.MORE_TAXIWAY_EXIT, ref ___ELVtext);
             SetupButton(ref ___EntBtn, UpgradeOpt.TURN_FASTER, ref ___ELVtext);
@@ -81,6 +83,28 @@ namespace AirwaysCEO
                 UpdateButtonSprite(UpgradeOpt.AIRSPACE, ref sprites_);
                 UpdateButtonSprite(UpgradeOpt.COMPENSATION, ref sprites_);
             }
+        }
+
+        public void SetupRefreshButton(ref Button parent, ref TMP_Text textParent)
+        {
+            refreshButton = Instantiate(parent.gameObject).GetComponent<Button>();
+            refreshButton.onClick.RemoveAllListeners();
+            refreshButton.onClick = new Button.ButtonClickedEvent();
+            refreshButton.onClick.AddListener(RefreshUpgrade);
+            refreshButton.gameObject.SetActive(value: false);
+
+            SetupRefreshCost(ref textParent);
+        }
+
+        public void ShowRefreshButton(Transform parent)
+        {
+            refreshButton.gameObject.SetActive(value: true);
+            refreshButton.gameObject.transform.SetParent(parent);
+            refreshButton.transform.localPosition = new Vector3(400, 50, -9f);
+
+            refreshCostText.gameObject.SetActive(value: true);
+            refreshCostText.gameObject.transform.SetParent(parent);
+            refreshCostText.transform.localPosition = new Vector3(425, 150, -9f);
         }
 
         private void UpdateButtonSprite(UpgradeOpt upgradeOpt, ref List<Sprite> sprites)
@@ -132,7 +156,7 @@ namespace AirwaysCEO
 
             TMP_Text cost = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
             cost.transform.localPosition = new Vector3(785 + ((int)upgradeOpt - 1) * 60, -630, -9f);
-            cost.text = "$" + buyCosts[(int)upgradeOpt];
+            cost.text = "-$" + buyCosts[(int)upgradeOpt];
 
             if (sprites != null)
             {
@@ -140,8 +164,36 @@ namespace AirwaysCEO
             }
         }
 
+        private void SetupPurchaseButton(ref Button parent, ref TMP_Text parentText)
+        {
+            GameObject esc_button = GameObject.Find("ESC_Button");
+            purchaseButton = Instantiate(parent.gameObject, esc_button.transform.parent).GetComponent<Button>();
+            purchaseButton.transform.localPosition = new Vector3(-1100f, 620f, -9f);
+            purchaseButton.onClick.RemoveAllListeners();
+            purchaseButton.onClick = new Button.ButtonClickedEvent();
+            purchaseButton.onClick.AddListener(BuyUpgrades);
+
+            TMP_Text costText = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
+            costText.fontSize = 30f;
+            costText.rectTransform.sizeDelta = new Vector2(190f, 70f);
+            costText.transform.localPosition = new Vector3(-1070f, 670f, -9f);
+            costText.text = "-$" + buyCost;
+        }
+
         private void UpdateButtons()
         {
+            if (purchaseButton != null)
+            {
+                purchaseButton.GetComponent<Image>().color = cash >= buyCost ? new Color(255, 255, 255, 0.1f) : new Color(0, 0, 0, 0.5f);
+                purchaseButton.transform.Find("Image").GetComponent<Image>().color = cash >= buyCost ? new Color(255, 255, 255, 1f) : new Color(0, 0, 0, 0.5f);
+            }
+
+            if (refreshButton != null)
+            {
+                refreshButton.GetComponent<Image>().color = cash >= refreshCost ? new Color(255, 255, 255, 0.1f) : new Color(0, 0, 0, 0.5f);
+                refreshButton.transform.Find("Image").GetComponent<Image>().color = cash >= refreshCost ? new Color(255, 255, 255, 1f) : new Color(0, 0, 0, 0.5f);
+            }
+
             UpdateButton(UpgradeOpt.LONGER_TAXIWAY);
             UpdateButton(UpgradeOpt.MORE_TAXIWAY_EXIT);
             UpdateButton(UpgradeOpt.TURN_FASTER);
@@ -191,6 +243,15 @@ namespace AirwaysCEO
             cashDisplay.transform.localPosition = new Vector3(720f, -670f, -9f);
             cashDisplay.rectTransform.sizeDelta = new Vector2(200f, 100f);
             cashDisplay.text = "$ " + cash;
+        }
+
+        private void SetupRefreshCost(ref TMP_Text parent)
+        {
+            refreshCostText = Instantiate(parent.gameObject).GetComponent<TMP_Text>();
+            refreshCostText.fontSize = 30f;
+            refreshCostText.rectTransform.sizeDelta = new Vector2(195f, 50f);
+            refreshCostText.text = "-$" + refreshCost;
+            refreshCostText.gameObject.SetActive(value: false);
         }
 
         private IEnumerator TurnFasterCoroutine()
@@ -329,9 +390,11 @@ namespace AirwaysCEO
         public const int buyCost = 20;
         public List<int> buyCosts = new List<int> { 0, 30, 40, 30, 30, 40, 30, 40, 50, 50 };
         public int cash = 0;
-        public Transform upgradeButton;
         private List<Sprite> sprites;
         private TMP_Text cashDisplay;
+        private Button purchaseButton;
+        private TMP_Text refreshCostText;
+        private Button refreshButton;
         private List<Button> buttons = new List<Button> { null, null, null, null, null, null, null, null, null, null };
         private bool upgrading = false;
     }
@@ -375,12 +438,25 @@ namespace AirwaysCEO
     [HarmonyPatch(typeof(UpgradeManager), "Start", new Type[] { })]
     class PatchUpgradeManagerStart
     {
-        static bool Prefix(ref float ___upgradeInterval, ref List<Sprite> ___sprites, ref List<Transform> ___upgradeButtonList)
+        static bool Prefix(ref float ___upgradeInterval, ref List<Sprite> ___sprites)
         {
             // Double the speed for upgrade.
             ___upgradeInterval = float.MaxValue;
             Plugin.manager.UpdateButtonsSprite(ref ___sprites);
-            Plugin.manager.upgradeButton = ___upgradeButtonList[0];
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(UpgradeManager), "ShowUpgradePanel", new Type[] { })]
+    class PatchShowUpgradePanel
+    {
+        static bool Prefix(ref List<Transform> ___upgradeButtonList)
+        {
+            if (MapManager.gameMode == GameMode.SandBox)
+            {
+                return true;
+            }
+            Plugin.manager.ShowRefreshButton(___upgradeButtonList[2]);
             return true;
         }
     }
@@ -388,13 +464,15 @@ namespace AirwaysCEO
     [HarmonyPatch(typeof(GUISandBoxPanel), "Start", new Type[] { })]
     class PatchGUISandBoxPanelStart
     {
-        static bool Prefix(ref Button ___TOBtn, ref Button ___LDBtn, ref Button ___HdgBtn, ref Button ___HldBtn, ref Button ___EntBtn, ref TMP_Text ___ELVtext)
+        static bool Prefix(ref Button ___TOBtn, ref Button ___LDBtn, ref Button ___HdgBtn, ref Button ___HldBtn, ref Button ___EntBtn, ref Button ___DelBtn, ref TMP_Text ___ELVtext)
         {
             if (MapManager.gameMode == GameMode.SandBox)
             {
                 return true;
             }
             Plugin.manager.SetupButtons(ref ___EntBtn, ref ___HdgBtn, ref ___HldBtn, ref ___LDBtn, ref ___TOBtn, ref ___ELVtext);
+            Plugin.manager.SetupRefreshButton(ref ___DelBtn, ref ___ELVtext);
+
             return true;
         }
     }
