@@ -9,6 +9,7 @@ using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace MoneyAirways
 {
@@ -32,6 +33,11 @@ namespace MoneyAirways
             Logger.LogInfo($"Scene loaded: {scene.name}");
             if ((scene.name == "MapPlayer" || scene.name == "London" || scene.name == "CreatorPlayer"))
             {
+                if (MapManager.gameMode == GameMode.SandBox)
+                {
+                    return;
+                }
+
                 GameObject esc_button = GameObject.Find("ESC_Button");
                 if (esc_button != null)
                 {
@@ -46,9 +52,19 @@ namespace MoneyAirways
     }
 
     public class Manager : MonoBehaviour {
-        private void Start()
+        public void SetupButtons(ref Button ___EntBtn, ref Button ___HdgBtn, ref Button ___HldBtn, ref Button ___LDBtn, ref Button ___TOBtn, ref TMP_Text ___ELVtext)
         {
-            InitTMP();
+            SetupButton(ref ___EntBtn, UpgradeOpt.LONGER_TAXIWAY, ref ___ELVtext);
+            SetupButton(ref ___EntBtn, UpgradeOpt.MORE_TAXIWAY_EXIT, ref ___ELVtext);
+            SetupButton(ref ___EntBtn, UpgradeOpt.TURN_FASTER, ref ___ELVtext);
+            SetupButton(ref ___EntBtn, UpgradeOpt.AIRSPACE, ref ___ELVtext);
+            SetupButton(ref ___EntBtn, UpgradeOpt.COMPENSATION, ref ___ELVtext);
+            SetupButton(ref ___HdgBtn, UpgradeOpt.NAVIGATION_WAYPOINT, ref ___ELVtext);
+            SetupButton(ref ___HldBtn, UpgradeOpt.HOLD_WAYPOINT, ref ___ELVtext);
+            SetupButton(ref ___LDBtn, UpgradeOpt.LAND_WAYPOINT, ref ___ELVtext);
+            SetupButton(ref ___TOBtn, UpgradeOpt.TAKEOFF_WAYPOINT, ref ___ELVtext);
+
+            SetupCost(ref ___ELVtext);
         }
 
         private void Update()
@@ -57,26 +73,100 @@ namespace MoneyAirways
             {
                 return;
             }
-
-            Vector3 escButtonBottomRight = Camera.main.ViewportToWorldPoint(new Vector3(0.07f, 0.88f, 0f));
-            cashDisplayObj.transform.position = new Vector3(escButtonBottomRight.x + 0.75f, escButtonBottomRight.y + 0.3f, 0f);
             cashDisplay.text = "$ " + cash;
 
-            RefreshUpgrade();
-            BuyUpgrade();
-            BuyUpgrades();
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RefreshUpgrade();
+            }
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                BuyUpgrade();
+            }
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                BuyUpgrades();
+            }
+            UpdateButtons();
         }
 
-        private void InitTMP()
+        private void SetupButton(ref Button parent, UpgradeOpt upgradeOpt, ref TMP_Text parentText)
         {
-            // Init wind text.
-            cashDisplayObj = Instantiate(new GameObject("Text"));
-            cashDisplay = cashDisplayObj.AddComponent<TextMeshPro>();
+            GameObject esc_button = GameObject.Find("ESC_Button");
+            buttons[(int)upgradeOpt] = Instantiate(parent.gameObject, esc_button.transform.parent).GetComponent<Button>();
+            buttons[(int)upgradeOpt].transform.localPosition = new Vector3(770 + ((int)upgradeOpt - 1) * 60, -680, -9f);
+            buttons[(int)upgradeOpt].onClick.RemoveAllListeners();
+            buttons[(int)upgradeOpt].onClick = new Button.ButtonClickedEvent();
+            buttons[(int)upgradeOpt].onClick.AddListener(()=>ApplyUpgrade(upgradeOpt));
 
-            cashDisplay.fontSize = 4f;
-            cashDisplay.horizontalAlignment = HorizontalAlignmentOptions.Left;
-            cashDisplay.verticalAlignment = VerticalAlignmentOptions.Top;
-            cashDisplay.rectTransform.sizeDelta = new Vector2(2, 1);
+            TMP_Text cost = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
+            cost.transform.localPosition = new Vector3(780 + ((int)upgradeOpt - 1) * 60, -630, -9f);
+            cost.text = "$" + buyCosts[(int)upgradeOpt];
+
+            TMP_Text name = Instantiate(parentText.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
+            name.transform.localPosition = new Vector3(790 + ((int)upgradeOpt - 1) * 60, -600, -9f);
+            name.text = GetName(upgradeOpt);
+        }
+
+        private string GetName(UpgradeOpt upgradeOpt)
+        {
+            switch (upgradeOpt)
+            {
+                case UpgradeOpt.LONGER_TAXIWAY:
+                    return "Apron";
+                case UpgradeOpt.MORE_TAXIWAY_EXIT:
+                    return "Exit";
+                case UpgradeOpt.TURN_FASTER:
+                    return "Turn";
+                case UpgradeOpt.AIRSPACE:
+                    return "Space";
+                case UpgradeOpt.COMPENSATION:
+                    return "Comp";
+            }
+            return "";
+        }
+
+        private void UpdateButtons()
+        {
+            UpdateButton(UpgradeOpt.LONGER_TAXIWAY);
+            UpdateButton(UpgradeOpt.MORE_TAXIWAY_EXIT);
+            UpdateButton(UpgradeOpt.TURN_FASTER);
+            UpdateButton(UpgradeOpt.AIRSPACE);
+            UpdateButton(UpgradeOpt.COMPENSATION);
+            UpdateButton(UpgradeOpt.NAVIGATION_WAYPOINT);
+            UpdateButton(UpgradeOpt.HOLD_WAYPOINT);
+            UpdateButton(UpgradeOpt.LAND_WAYPOINT);
+            UpdateButton(UpgradeOpt.TAKEOFF_WAYPOINT);
+        }
+
+        private bool UpgradeAvailable(UpgradeOpt upgradeOpt)
+        {
+            bool available = cash >= buyCosts[(int)upgradeOpt];
+            switch (upgradeOpt)
+            {
+                case UpgradeOpt.AIRSPACE:
+                    available &= Camera.main.orthographicSize <= LevelManager.Instance.maximumCameraOrthographicSize - 0.5f;
+                    break;
+                case UpgradeOpt.COMPENSATION:
+                    available &= RestrictedAreaManager.Instance != null && RestrictedAreaManager.Instance.counter < 3;
+                    break;
+            }
+            return available;
+        }
+
+        private void UpdateButton(UpgradeOpt upgradeOpt)
+        {
+            buttons[(int)upgradeOpt].GetComponent<Image>().color = UpgradeAvailable(upgradeOpt) ? new Color(255, 255, 255, 0.1f) : new Color(255, 255, 255, 0.75f);
+        }
+
+        private void SetupCost(ref TMP_Text parent)
+        {
+            GameObject esc_button = GameObject.Find("ESC_Button");
+            cashDisplay = Instantiate(parent.gameObject, esc_button.transform.parent).GetComponent<TMP_Text>();
+            cashDisplay.fontSize = 40f;
+            cashDisplay.transform.localPosition = new Vector3(720f, -670f, -9f);
+            cashDisplay.rectTransform.sizeDelta = new Vector2(200f, 100f);
+            cashDisplay.text = "$ " + cash;
         }
 
         private IEnumerator TurnFasterCoroutine()
@@ -97,64 +187,88 @@ namespace MoneyAirways
 
         private void BuyUpgrade()
         {
-            if (!Input.GetKey(KeyCode.LeftShift) || upgrading)
+            UpgradeOpt upgradeOpt = UpgradeOpt.NONE;
+            if (Input.GetKey(KeyCode.Alpha1))
+            {
+                upgradeOpt = UpgradeOpt.LONGER_TAXIWAY;
+            }
+            else if (Input.GetKey(KeyCode.Alpha2))
+            {
+                upgradeOpt = UpgradeOpt.MORE_TAXIWAY_EXIT;
+            }
+            else if (Input.GetKey(KeyCode.Alpha3))
+            {
+                upgradeOpt = UpgradeOpt.TURN_FASTER;
+            }
+            else if (Input.GetKey(KeyCode.Alpha4))
+            {
+                upgradeOpt = UpgradeOpt.AIRSPACE;
+            }
+            else if (Input.GetKey(KeyCode.Alpha5))
+            {
+                upgradeOpt = UpgradeOpt.COMPENSATION;
+            }
+            else if (Input.GetKey(KeyCode.Alpha6))
+            {
+                upgradeOpt = UpgradeOpt.NAVIGATION_WAYPOINT;
+            }
+            else if (Input.GetKey(KeyCode.Alpha7))
+            {
+                upgradeOpt = UpgradeOpt.HOLD_WAYPOINT;
+            }
+            else if (Input.GetKey(KeyCode.Alpha8))
+            {
+                upgradeOpt = UpgradeOpt.LAND_WAYPOINT;
+            }
+            else if (Input.GetKey(KeyCode.Alpha9))
+            {
+                upgradeOpt = UpgradeOpt.TAKEOFF_WAYPOINT;
+            }
+
+            ApplyUpgrade(upgradeOpt);
+        }
+
+        private void ApplyUpgrade(UpgradeOpt upgradeOpt)
+        {
+            if (upgrading || upgradeOpt == UpgradeOpt.NONE || !UpgradeAvailable(upgradeOpt))
             {
                 return;
             }
 
-            UpgradeOpt upgradeOpt = UpgradeOpt.NONE;
-            if (Input.GetKey(KeyCode.Alpha1) && cash >= buyCosts[1])
+            switch (upgradeOpt)
             {
-                upgradeOpt = UpgradeOpt.LONGER_TAXIWAY;
-                TakeoffTaskManager.Instance.AddApron();
-            }
-            else if (Input.GetKey(KeyCode.Alpha2) && cash >= buyCosts[2])
-            {
-                upgradeOpt = UpgradeOpt.MORE_TAXIWAY_EXIT;
-                TakeoffTaskManager.Instance.AddEntrance();
-            }
-            else if (Input.GetKey(KeyCode.Alpha3) && cash >= buyCosts[3])
-            {
-                upgradeOpt = UpgradeOpt.TURN_FASTER;
-                StartCoroutine(TurnFasterCoroutine());
-            }
-            else if (Camera.main.orthographicSize <= LevelManager.Instance.maximumCameraOrthographicSize - 0.5f && Input.GetKey(KeyCode.Alpha4) && cash >= buyCosts[4])
-            {
-                upgradeOpt = UpgradeOpt.AIRSPACE;
-                StartCoroutine(IncreaseAirspaceCoroutine());
-            }
-            else if (RestrictedAreaManager.Instance != null && RestrictedAreaManager.Instance.counter < 3 && Input.GetKey(KeyCode.Alpha5) && cash >= buyCosts[5])
-            {
-                upgradeOpt = UpgradeOpt.COMPENSATION;
-                RestrictedAreaManager.Instance.ResetCounter();
-            }
-            else if (Input.GetKey(KeyCode.Alpha6) && cash >= buyCosts[6])
-            {
-                upgradeOpt = UpgradeOpt.NAVIGATION_WAYPOINT;
-                WaypointPropsManager.Instance.SpawnWaypointAutoHeading();
-            }
-            else if (Input.GetKey(KeyCode.Alpha7) && cash >= buyCosts[7])
-            {
-                upgradeOpt = UpgradeOpt.HOLD_WAYPOINT;
-                WaypointPropsManager.Instance.SpawnWaypointAutoHover();
-            }
-            else if (Input.GetKey(KeyCode.Alpha8) && cash >= buyCosts[8])
-            {
-                upgradeOpt = UpgradeOpt.LAND_WAYPOINT;
-                WaypointPropsManager.Instance.SpawnWaypointAutoLanding();
-            }
-            else if (Input.GetKey(KeyCode.Alpha9) && cash >= buyCosts[9])
-            {
-                upgradeOpt = UpgradeOpt.TAKEOFF_WAYPOINT;
-                WaypointPropsManager.Instance.SpawnWaypointTakingOff();
+                case UpgradeOpt.LONGER_TAXIWAY:
+                    TakeoffTaskManager.Instance.AddApron();
+                    break;
+                case UpgradeOpt.MORE_TAXIWAY_EXIT:
+                    TakeoffTaskManager.Instance.AddEntrance();
+                    break;
+                case UpgradeOpt.TURN_FASTER:
+                    StartCoroutine(TurnFasterCoroutine());
+                    break;
+                case UpgradeOpt.AIRSPACE:
+                    StartCoroutine(IncreaseAirspaceCoroutine());
+                    break;
+                case UpgradeOpt.COMPENSATION:
+                    RestrictedAreaManager.Instance.ResetCounter();
+                    break;
+                case UpgradeOpt.NAVIGATION_WAYPOINT:
+                    WaypointPropsManager.Instance.SpawnWaypointAutoHeading();
+                    break;
+                case UpgradeOpt.HOLD_WAYPOINT:
+                    WaypointPropsManager.Instance.SpawnWaypointAutoHover();
+                    break;
+                case UpgradeOpt.LAND_WAYPOINT:
+                    WaypointPropsManager.Instance.SpawnWaypointAutoLanding();
+                    break;
+                case UpgradeOpt.TAKEOFF_WAYPOINT:
+                    WaypointPropsManager.Instance.SpawnWaypointTakingOff();
+                    break;
             }
 
-            if (upgradeOpt != UpgradeOpt.NONE)
-            {
-                cash -= buyCosts[(int)upgradeOpt];
-                upgrading = true;
-                StartCoroutine(ResetUpgrading());
-            }
+            cash -= buyCosts[(int)upgradeOpt];
+            upgrading = true;
+            StartCoroutine(ResetUpgrading());
             // UpgradeManager.Instance.counter[(int)upgradeOpt]++;
         }
 
@@ -166,7 +280,7 @@ namespace MoneyAirways
 
         private void BuyUpgrades()
         {
-            if (!Input.GetKeyDown(KeyCode.B) || cash < buyCost || !UpgradeManager.Instance.UpgradeComplete)
+            if (cash < buyCost || !UpgradeManager.Instance.UpgradeComplete)
             {
                 return;
             }
@@ -175,9 +289,9 @@ namespace MoneyAirways
             UpgradeManager.Instance.EnableUpgrade();
         }
 
-        private void RefreshUpgrade()
+        public void RefreshUpgrade()
         {
-            if (!Input.GetKeyDown(KeyCode.R) || cash < refreshCost || UpgradeManager.Instance.UpgradeComplete)
+            if (cash < refreshCost || UpgradeManager.Instance.UpgradeComplete)
             {
                 return;
             }
@@ -193,6 +307,7 @@ namespace MoneyAirways
         public int cash = 0;
         private TMP_Text cashDisplay;
         private GameObject cashDisplayObj;
+        private List<Button> buttons = new List<Button> { null, null, null, null, null, null, null, null, null, null };
         private bool upgrading = false;
     }
 
@@ -239,6 +354,20 @@ namespace MoneyAirways
         {
             // Double the speed for upgrade.
             ___upgradeInterval = float.MaxValue;
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(GUISandBoxPanel), "Start", new Type[] { })]
+    class PatchGUISandBoxPanelStart
+    {
+        static bool Prefix(ref Button ___TOBtn, ref Button ___LDBtn, ref Button ___HdgBtn, ref Button ___HldBtn, ref Button ___EntBtn, ref TMP_Text ___ELVtext)
+        {
+            if (MapManager.gameMode == GameMode.SandBox)
+            {
+                return true;
+            }
+            Plugin.manager.SetupButtons(ref ___EntBtn, ref ___HdgBtn, ref ___HldBtn, ref ___LDBtn, ref ___TOBtn, ref ___ELVtext);
             return true;
         }
     }
