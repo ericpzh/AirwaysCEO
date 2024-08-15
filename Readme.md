@@ -2,7 +2,7 @@
 
 A Mini Airways mod allows you to purchase upgrades and refresh upgrade options actively. Each hand-over/landing gets you two times the point worth of cash. Current cash is displayed on the lower-right.
 
-<img src="ui1.png" width=100% height=100%>
+<img src="ui1.png" width=80% height=80%>
 
 Use the button on the bottom right corner to purchase upgrade directly, or press `Left SHIFT` + numbers `1` ~ `9` to purchase upgrade directly. 
 
@@ -13,7 +13,7 @@ Use the button on the bottom right corner to purchase upgrade directly, or press
 
 Use the button on the top left corner or press `B` to buy an random upgrade (-$20) and use the button on the right of upgrade list or press `R` to refresh the upgrade list (-$5).
 
-<p float="left">
+<p align="center">
     <img src="ui2.png" width=30% height=30%>
     <img src="ui3.png" width=30% height=30%>
 </p>
@@ -29,7 +29,7 @@ Use the button on the top left corner or press `B` to buy an random upgrade (-$2
 
 一个能让你购买升级的迷你空管Mod。每次起飞降落可以获得2倍分数的钱。右下角可以查看当前余额。
 
-<img src="ui1.png" width=100% height=100%>
+<img src="ui1.png" width=80% height=80%>
 
 用画面右下角的按键直接购买升级，也可以用 `Left SHIFT` + 数字键`1` ~ `9`直接购买升级。
 
@@ -41,7 +41,7 @@ Use the button on the top left corner or press `B` to buy an random upgrade (-$2
 
 用画面左上角的按键或按`B`购买一项随机升级（-$20），按升级列表右边的按键或按`R`刷新升级列表（-$5）。
 
-<p float="left">
+<p align="center">
     <img src="ui2.png" width=30% height=30%>
     <img src="ui3.png" width=30% height=30%>
 </p>
