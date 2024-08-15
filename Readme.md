@@ -13,9 +13,9 @@ Use the button on the bottom right corner to purchase upgrade directly, or press
 
 Use the button on the top left corner or press `B` to buy an random upgrade (-$20) and use the button on the right of upgrade list or press `R` to refresh the upgrade list (-$5).
 
-<img src="ui2.png" width=50% height=50%>
+<img src="ui2.png" width=20% height=20%>
 
-<img src="ui3.png" width=50% height=50%>
+<img src="ui3.png" width=20% height=20%>
 
 # How to Install
 
@@ -40,9 +40,9 @@ Use the button on the top left corner or press `B` to buy an random upgrade (-$2
 
 用画面左上角的按键或按`B`购买一项随机升级（-$20），按升级列表右边的按键或按`R`刷新升级列表（-$5）。
 
-<img src="ui2.png" width=50% height=50%>
+<img src="ui2.png" width=20% height=20%>
 
-<img src="ui3.png" width=50% height=50%>
+<img src="ui3.png" width=20% height=20%>
 
 # 如何安装
 

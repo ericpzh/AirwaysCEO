@@ -107,21 +107,6 @@ namespace AirwaysCEO
             refreshCostText.transform.localPosition = new Vector3(425, 150, -9f);
         }
 
-        private void UpdateButtonSprite(UpgradeOpt upgradeOpt, ref List<Sprite> sprites)
-        {
-            switch (upgradeOpt)
-            {
-                case UpgradeOpt.LONGER_TAXIWAY:
-                case UpgradeOpt.MORE_TAXIWAY_EXIT:
-                case UpgradeOpt.TURN_FASTER:
-                case UpgradeOpt.AIRSPACE:
-                case UpgradeOpt.COMPENSATION:
-                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<Image>().sprite = sprites[(int)upgradeOpt];
-                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<RectTransform>().sizeDelta = new Vector2(30, 45);
-                    break;
-            }
-        }
-
         private void Update()
         {
             if (cashDisplay == null)
@@ -143,6 +128,21 @@ namespace AirwaysCEO
                 BuyUpgrades();
             }
             UpdateButtons();
+        }
+
+        private void UpdateButtonSprite(UpgradeOpt upgradeOpt, ref List<Sprite> sprites)
+        {
+            switch (upgradeOpt)
+            {
+                case UpgradeOpt.LONGER_TAXIWAY:
+                case UpgradeOpt.MORE_TAXIWAY_EXIT:
+                case UpgradeOpt.TURN_FASTER:
+                case UpgradeOpt.AIRSPACE:
+                case UpgradeOpt.COMPENSATION:
+                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<Image>().sprite = sprites[(int)upgradeOpt];
+                    buttons[(int)upgradeOpt].transform.Find("Image").GetComponent<RectTransform>().sizeDelta = new Vector2(30, 45);
+                    break;
+            }
         }
 
         private void SetupButton(ref Button parent, UpgradeOpt upgradeOpt, ref TMP_Text parentText)
@@ -354,7 +354,11 @@ namespace AirwaysCEO
             cash -= buyCosts[(int)upgradeOpt];
             upgrading = true;
             StartCoroutine(ResetUpgrading());
-            // UpgradeManager.Instance.counter[(int)upgradeOpt]++;
+
+            // Reflex for UpgradeManager.Instance.counter[(int)upgradeOpt]++;
+            int[] counter = UpgradeManager.Instance.GetFieldValue<int[]>("counter");
+            counter[(int)upgradeOpt]++;
+            UpgradeManager.Instance.SetFieldValue<int[]>("counter", counter);
         }
 
         private IEnumerator ResetUpgrading()
@@ -374,7 +378,7 @@ namespace AirwaysCEO
             UpgradeManager.Instance.EnableUpgrade();
         }
 
-        public void RefreshUpgrade()
+        private void RefreshUpgrade()
         {
             if (cash < refreshCost || UpgradeManager.Instance.UpgradeComplete)
             {
