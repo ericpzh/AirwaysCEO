@@ -22,7 +22,7 @@ Use the button on the top left corner or press `B` to buy an random upgrade (-$2
 # How to Install
 
 - Switch the game to `mod_feat` [branch](https://partner.steamgames.com/doc/store/application/branches?) on Steam.
-- Copy [AirwaysCEO.dll](https://github.com/ericpzh/AirwaysCEO/blob/main/bin/Debug/netstandard2.1/AirwaysCEO.dll) into `<path_to_game>\Mini Airways\BepInEx\plugins`
+- Download and move [AirwaysCEO.dll](https://github.com/ericpzh/AirwaysCEO/releases/download/Public/AirwaysCEO.dll) into `<path_to_game>\Mini Airways\BepInEx\plugins`
 
 ***
 
@@ -51,4 +51,4 @@ Use the button on the top left corner or press `B` to buy an random upgrade (-$2
 # 如何安装
 
 - 右键库中的Mini Airways，[属性 - 测试版 - mod_feat](https://partner.steamgames.com/doc/store/application/branches?l=schinese), 更新。
-- 复制[AirwaysCEO.dll](https://github.com/ericpzh/AirwaysCEO/blob/main/bin/Debug/netstandard2.1/AirwaysCEO.dll) 到 `<path_to_game>\Mini Airways\BepInEx\plugins`。
+- 下载[AirwaysCEO.dll](https://github.com/ericpzh/AirwaysCEO/releases/download/Public/AirwaysCEO.dll) 到 `<path_to_game>\Mini Airways\BepInEx\plugins`。
